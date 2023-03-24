@@ -6,6 +6,7 @@ import java.awt.FontFormatException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -25,6 +26,9 @@ public class Hangman extends javax.swing.JFrame {
 
     /*Variables*/
     Font font;
+    int lifes;
+    int currentIcon = 0;
+    String currentWord = new String();
     FileWord words = new FileWord("src/words/words.txt");
     String[] imagePaths = {
                             "src/img/begin.jpg", 
@@ -46,16 +50,81 @@ public class Hangman extends javax.swing.JFrame {
     }
     
     private void startGame() throws IOException {
-        String word = new String();
-        word = words.getWord();
+        lblHangmanImage.setIcon(icons[0]);
+        lifes = 7;
+        lblHangmanLifes.setText(
+                lblHangmanLifes.getText() + " " + String.valueOf(lifes));
+        currentIcon = 0;
+        btnHangmanPlay.setEnabled(false);
+        // Enabling the stuff
+        btnHangmanChoosed.setEnabled(true);
+        txtHangmanChoosedLetter.setEnabled(true);
+        currentWord = words.getWord().toUpperCase();
+        char[] wordGuessedChars;
+        wordGuessedChars = new char[currentWord.length()];
+        Arrays.fill(wordGuessedChars, '_');
+        String wordGuessed = new String();
+        for(char c : wordGuessedChars) {
+            wordGuessed += c + " ";
+        }
+        lblWord.setText(wordGuessed);
+    }
+    
+    private void choosingChar() {
+        // Obtaining an unique character from the JTextField
+        char[] wordGuessedChars;
         
+        String str = lblWord.getText().replaceAll("\\s", "");
+        
+        wordGuessedChars = new char[str.length()];
+        wordGuessedChars = str.toCharArray(); //cadena normal _____ sin espacios
+                
+        boolean atLeastOneConcurrence = false;
+        char choosedChar = txtHangmanChoosedLetter.getText().toUpperCase().charAt(0);
+        for(int i = 0; i < currentWord.length(); i++) {
+            if(currentWord.charAt(i) == choosedChar) {
+                atLeastOneConcurrence = true;
+                wordGuessedChars[i] = choosedChar;
+            }
+        }
+        System.gc();
+        if(atLeastOneConcurrence == false) {
+            fail();
+        }
+        else {
+            String wordGuessed = new String(wordGuessedChars);
+            lblWord.setText(wordGuessed);
+        }
+        if (currentWord.equals(lblWord.getText())) {
+            winGame();
+        } 
+    }
+    
+    private void loseGame() {
+        message("Mission failed, you loss!");
+        gameOver();
+    }
+    
+    private void winGame() {
+        lblHangmanImage.setIcon(icons[8]);
+        message("Congratulations, you win");
+        gameOver();
+    }
+    
+    private void fail() {
+        lifes--;
+        lblHangmanLifes.setText("Lifes " + String.valueOf(lifes));
+        lblHangmanImage.setIcon(icons[++currentIcon]);
+        if(lifes==0) {
+            loseGame();
+        }
     }
     
     private void gameOver() {
         btnHangmanChoosed.setEnabled(false);
         btnHangmanPlay.setEnabled(true);
         txtHangmanChoosedLetter.setText("");
-        txtHangmanChoosedLetterKeyTyped("");
+        txtHangmanChoosedLetter.setEnabled(false);
     }
     
     /**
@@ -127,7 +196,7 @@ public class Hangman extends javax.swing.JFrame {
         lblHangmanLifes.setText("Lifes");
 
         lblHangmanImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHangmanImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/gameWin.jpg"))); // NOI18N
+        lblHangmanImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/begin.jpg"))); // NOI18N
         lblHangmanImage.setText("jLabel1");
 
         lblHangmanWordTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -164,9 +233,9 @@ public class Hangman extends javax.swing.JFrame {
                 .addComponent(lblHangmanImage, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(29, 29, 29)
                 .addGroup(panHangmanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblHangmanLifes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lblHangmanWordTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panHangmanWord, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(panHangmanWord, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblHangmanLifes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panHangmanLayout.setVerticalGroup(
@@ -188,6 +257,7 @@ public class Hangman extends javax.swing.JFrame {
 
         txtHangmanChoosedLetter.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
         txtHangmanChoosedLetter.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtHangmanChoosedLetter.setEnabled(false);
         txtHangmanChoosedLetter.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtHangmanChoosedLetterKeyTyped(evt);
@@ -203,6 +273,7 @@ public class Hangman extends javax.swing.JFrame {
         btnHangmanChoosed.setBackground(new java.awt.Color(255, 255, 255));
         btnHangmanChoosed.setForeground(new java.awt.Color(0, 0, 0));
         btnHangmanChoosed.setText("Submit");
+        btnHangmanChoosed.setEnabled(false);
         btnHangmanChoosed.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnHangmanChoosedActionPerformed(evt);
@@ -265,7 +336,7 @@ public class Hangman extends javax.swing.JFrame {
     }//GEN-LAST:event_txtHangmanChoosedLetterKeyTyped
 
     private void btnHangmanChoosedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHangmanChoosedActionPerformed
-
+        choosingChar();
     }//GEN-LAST:event_btnHangmanChoosedActionPerformed
 
     private void btnHangmanPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHangmanPlayActionPerformed
