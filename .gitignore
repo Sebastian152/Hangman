@@ -16,3 +16,5 @@ src/img/phase3.jpg
 src/img/phase4.jpg
 src/img/phase5.jpg
 src/img/phase6.jpg
+*.png
+*.wav

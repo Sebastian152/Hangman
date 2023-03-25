@@ -3,20 +3,17 @@ package main;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.event.KeyEvent;
+import javax.sound.sampled.Clip;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import words.FileWord;
-
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 
 /**
  *
@@ -49,11 +46,11 @@ public class Hangman extends javax.swing.JFrame {
         }
     }
     
-    private void startGame() throws IOException {
+    private void startGame() throws IOException, UnsupportedAudioFileException {
         lblHangmanImage.setIcon(icons[0]);
         lifes = 7;
         lblHangmanLifes.setText(
-                lblHangmanLifes.getText() + " " + String.valueOf(lifes));
+                 "Lifes " + String.valueOf(lifes));
         currentIcon = 0;
         btnHangmanPlay.setEnabled(false);
         // Enabling the stuff
@@ -68,9 +65,10 @@ public class Hangman extends javax.swing.JFrame {
             wordGuessed += c + " ";
         }
         lblWord.setText(wordGuessed);
+        
     }
     
-    private void choosingChar() {
+    private void choosingChar() throws LineUnavailableException, IOException, InterruptedException {
         // Obtaining an unique character from the JTextField
         char[] wordGuessedChars;
         
@@ -93,28 +91,115 @@ public class Hangman extends javax.swing.JFrame {
         }
         else {
             String wordGuessed = new String(wordGuessedChars);
+            Clip clip = AudioSystem.getClip();
+            try {
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                        new File("src/resources/sounds/Bubble.wav")
+                                .getAbsoluteFile());
+                clip.open(audioInputStream);
+            } catch (UnsupportedAudioFileException ex) {
+                showError(ex);
+            }
+            // Cargar el archivo de sonido en el Clip
+
+
+            // Reproducir el sonido
+            clip.start();
+
+             // Esperar a que termine de reproducirse el sonido
+                while (!clip.isRunning()) {
+                    Thread.sleep(1);
+                }
+                while (clip.isRunning()) {
+                    Thread.sleep(1);
+                }      
             lblWord.setText(wordGuessed);
+            clip.close();
         }
         if (currentWord.equals(lblWord.getText())) {
             winGame();
         } 
     }
     
-    private void loseGame() {
-        message("Mission failed, you loss!");
+    private void loseGame() throws LineUnavailableException, IOException, InterruptedException {
+        Clip clip = AudioSystem.getClip();
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                    new File("src/resources/sounds/Error.wav")
+                            .getAbsoluteFile());
+            clip.open(audioInputStream);
+        } catch (UnsupportedAudioFileException ex) {
+            showError(ex);
+        }
+        // Cargar el archivo de sonido en el Clip
+        
+        
+        // Reproducir el sonido
+        clip.start();
+        
+         // Esperar a que termine de reproducirse el sonido
+            while (!clip.isRunning()) {
+                Thread.sleep(1);
+            }
+            message("Mission failed, you loss!"); 
+            
+        clip.close();
         gameOver();
     }
     
-    private void winGame() {
+    private void winGame() throws IOException, LineUnavailableException, InterruptedException {
         lblHangmanImage.setIcon(icons[8]);
+        Clip clip = AudioSystem.getClip();
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                    new File("src/resources/sounds/Win.wav")
+                            .getAbsoluteFile());
+            clip.open(audioInputStream);
+        } catch (UnsupportedAudioFileException ex) {
+            showError(ex);
+        }
+        // Reproducir el sonido
+        clip.start();
+         // Esperar a que termine de reproducirse el sonido
+            while (!clip.isRunning()) {
+                Thread.sleep(1);
+            }
+            
         message("Congratulations, you win");
+        clip.close();
+        
+        
         gameOver();
     }
     
-    private void fail() {
+    private void fail() throws LineUnavailableException, IOException, InterruptedException {
         lifes--;
         lblHangmanLifes.setText("Lifes " + String.valueOf(lifes));
         lblHangmanImage.setIcon(icons[++currentIcon]);
+        Clip clip = AudioSystem.getClip();
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                    new File("src/resources/sounds/Fail.wav")
+                            .getAbsoluteFile());
+            clip.open(audioInputStream);
+        } catch (UnsupportedAudioFileException ex) {
+            showError(ex);
+        }
+        // Cargar el archivo de sonido en el Clip
+        
+        
+        // Reproducir el sonido
+        clip.start();
+        
+        // Esperar a que termine de reproducirse el sonido
+        while (!clip.isRunning()) {
+            Thread.sleep(1);
+        }
+        while (clip.isRunning()) {
+            Thread.sleep(1);
+        }
+            
+        clip.close();
         if(lifes==0) {
             loseGame();
         }
@@ -130,7 +215,7 @@ public class Hangman extends javax.swing.JFrame {
     /**
      * Creates new form Hangman
      */
-    public Hangman() throws FontFormatException, IOException {
+    public Hangman() throws FontFormatException, IOException, UnsupportedAudioFileException {
         startIcons();
         initComponents();
         this.font = Font.createFont(Font.TRUETYPE_FONT, 
@@ -143,6 +228,8 @@ public class Hangman extends javax.swing.JFrame {
         txtHangmanChoosedLetter.setFont(font);
         lblWord.setFont(font);
         btnHangmanPlay.setFont(font);
+        setLocationRelativeTo(null);
+        
     }
     
     // Static methods
@@ -272,6 +359,7 @@ public class Hangman extends javax.swing.JFrame {
 
         btnHangmanChoosed.setBackground(new java.awt.Color(255, 255, 255));
         btnHangmanChoosed.setForeground(new java.awt.Color(0, 0, 0));
+        btnHangmanChoosed.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/icons/btnSubmit.png"))); // NOI18N
         btnHangmanChoosed.setText("Submit");
         btnHangmanChoosed.setEnabled(false);
         btnHangmanChoosed.addActionListener(new java.awt.event.ActionListener() {
@@ -282,6 +370,7 @@ public class Hangman extends javax.swing.JFrame {
 
         btnHangmanPlay.setBackground(new java.awt.Color(255, 255, 255));
         btnHangmanPlay.setForeground(new java.awt.Color(0, 0, 0));
+        btnHangmanPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/icons/playBtn.png"))); // NOI18N
         btnHangmanPlay.setText("Play");
         btnHangmanPlay.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -294,21 +383,26 @@ public class Hangman extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panHangman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblHangmanLetterChoosed, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtHangmanChoosedLetter, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnHangmanChoosed, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 67, Short.MAX_VALUE)))
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(panHangman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblHangmanLetterChoosed, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtHangmanChoosedLetter, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(btnHangmanChoosed, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(27, 27, 27)
+                                .addComponent(btnHangmanPlay, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 17, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addComponent(btnHangmanPlay, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -321,8 +415,8 @@ public class Hangman extends javax.swing.JFrame {
                     .addComponent(lblHangmanLetterChoosed, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnHangmanChoosed, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnHangmanPlay, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(btnHangmanPlay, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -336,13 +430,20 @@ public class Hangman extends javax.swing.JFrame {
     }//GEN-LAST:event_txtHangmanChoosedLetterKeyTyped
 
     private void btnHangmanChoosedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHangmanChoosedActionPerformed
-        choosingChar();
+        try {
+            choosingChar();
+        } catch (LineUnavailableException 
+                | IOException ex) {
+            showError(ex);
+        } catch (InterruptedException ex) {
+            showError(ex);
+        }
     }//GEN-LAST:event_btnHangmanChoosedActionPerformed
 
     private void btnHangmanPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHangmanPlayActionPerformed
         try {
             startGame();
-        } catch (IOException ex) {
+        } catch (IOException | UnsupportedAudioFileException ex) {
             showError(ex);
         }
     }//GEN-LAST:event_btnHangmanPlayActionPerformed
@@ -383,8 +484,10 @@ public class Hangman extends javax.swing.JFrame {
             public void run() {
                 try {
                     new Hangman().setVisible(true);
-                } catch (FontFormatException | IOException ex) {
-                    Logger.getLogger(Hangman.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (FontFormatException 
+                        | IOException 
+                        | UnsupportedAudioFileException ex) {
+                    showError(ex);
                 }
             }
         });
